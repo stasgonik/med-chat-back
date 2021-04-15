@@ -1,0 +1,9 @@
+.idea
+node_modules
+dist
+.env
+public
+.vscode/launch.json
+src/configs/config.ts
+.node-xmlhttprequest-sync*
+package-lock.json
