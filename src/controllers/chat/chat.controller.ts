@@ -6,9 +6,9 @@ export const chatController = {
   getChatById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const {chatId} = req.params;
-      const chatWithMessgaes = await ChatModel.findByIdWithMessages(chatId);
+      const chatWithMessages = await ChatModel.findByIdWithMessages(chatId);
 
-      res.json(chatWithMessgaes);
+      res.json(chatWithMessages);
     } catch (err) {
       next(err);
     }

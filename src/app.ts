@@ -38,25 +38,24 @@ app.use('/chats', chatRouter);
 app.use(_customErrorHandler);
 
 io.on('connection', (socket: Socket) => {
-  socket.on('ROOM:JOIN', async ({roomId, userName}) => {
-    socket.join(roomId);
+  socket.on('ROOM:JOIN', async ({ chatId, chatUsers, role, oppositeRole }) => {
+    socket.join(chatId);
 
-    await MessageModel.create({
-      chatId: roomId,
-      from: userName,
-      body: `User ${userName} connected`,
+    const incomingMessage = await MessageModel.create({
+      chatId,
+      from: chatUsers[role],
+      to: chatUsers[oppositeRole],
+      body: `User ${chatUsers[role]} connected`,
       type: 'action'
     });
 
-    socket.to(roomId).emit('ROOM:SET_USERS', [22]);
+    socket.to(chatId).emit('ROOM:NEW_MESSAGE', incomingMessage);
   });
 
-  socket.on('ROOM:NEW_MESSAGE', async ({roomId, userName, text}) => {
-    const incomingMessage = {userName, text};
+  socket.on('ROOM:NEW_MESSAGE', async ({chatId, chatUsers, role, oppositeRole, body}) => {
+    const incomingMessage = await MessageModel.create({ chatId, from: chatUsers[role], to: chatUsers[oppositeRole], body });
 
-    await MessageModel.create({ chatId: roomId, from: userName, body: text });
-
-    socket.to(roomId).emit('ROOM:NEW_MESSAGE', incomingMessage);
+    socket.to(chatId).emit('ROOM:NEW_MESSAGE', incomingMessage);
   });
 
   socket.on('disconnect', () => {
