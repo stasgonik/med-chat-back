@@ -17,6 +17,7 @@ export const chatController = {
   createChat: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const {userName} = req.body;
+      // TODO real doctor name in future
       const room = await ChatModel.create({ doctorName: 'Viktor', patientName: userName });
 
       res.json(room);

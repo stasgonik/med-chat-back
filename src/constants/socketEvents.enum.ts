@@ -1,0 +1,5 @@
+export enum SocketEventsEnum {
+  ROOM_NEW_MESSAGE = 'ROOM:NEW_MESSAGE',
+  ROOM_SET_USERS = 'ROOM:SET_USERS',
+  ROOM_JOIN = 'ROOM:JOIN'
+}

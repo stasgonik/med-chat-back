@@ -3,6 +3,12 @@ import {Socket} from 'socket.io';
 import * as express from 'express';
 import {NextFunction, Request, Response} from 'express';
 import * as mongoose from 'mongoose';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+import {config} from './config';
+import {SocketEventsEnum} from './constants';
 
 const cors = require('cors');
 import * as RateLimit from 'express-rate-limit';
@@ -16,7 +22,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: config.FRONTEND_URL,
     methods: ['GET', 'POST']
   }
 });
@@ -38,7 +44,7 @@ app.use('/chats', chatRouter);
 app.use(_customErrorHandler);
 
 io.on('connection', (socket: Socket) => {
-  socket.on('ROOM:JOIN', async ({ chatId, chatUsers, role, oppositeRole }) => {
+  socket.on(SocketEventsEnum.ROOM_JOIN, async ({ chatId, chatUsers, role, oppositeRole }) => {
     socket.join(chatId);
 
     const incomingMessage = await MessageModel.create({
@@ -49,13 +55,13 @@ io.on('connection', (socket: Socket) => {
       type: 'action'
     });
 
-    socket.to(chatId).emit('ROOM:NEW_MESSAGE', incomingMessage);
+    socket.to(chatId).emit(SocketEventsEnum.ROOM_NEW_MESSAGE, incomingMessage);
   });
 
-  socket.on('ROOM:NEW_MESSAGE', async ({chatId, chatUsers, role, oppositeRole, body}) => {
+  socket.on(SocketEventsEnum.ROOM_NEW_MESSAGE, async ({chatId, chatUsers, role, oppositeRole, body}) => {
     const incomingMessage = await MessageModel.create({ chatId, from: chatUsers[role], to: chatUsers[oppositeRole], body });
 
-    socket.to(chatId).emit('ROOM:NEW_MESSAGE', incomingMessage);
+    socket.to(chatId).emit(SocketEventsEnum.ROOM_NEW_MESSAGE, incomingMessage);
   });
 
   socket.on('disconnect', () => {
@@ -69,11 +75,11 @@ io.on('connection', (socket: Socket) => {
   });
 });
 
-server.listen(5000, (err: Error) => {
+server.listen(config.PORT, (err: Error) => {
   if (err) {
     console.log('Error when starting server');
   }
-  console.log('App listen port 5000');
+  console.log(`App listen port ${config.PORT}`);
 });
 
 
@@ -94,5 +100,5 @@ function _customErrorHandler(err: any, req: Request, res: Response, next: NextFu
 }
 
 function _connectDB() {
-  mongoose.connect('mongodb://localhost:27017/med_chat', {useNewUrlParser: true, useFindAndModify: true});
+  mongoose.connect(config.MONGO_URL, {useNewUrlParser: true, useFindAndModify: true});
 }

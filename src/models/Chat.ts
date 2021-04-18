@@ -2,7 +2,7 @@ import {MessageModel} from './Message';
 
 const {Schema, model} = require('mongoose');
 
-import {DataBaseTablesEnum} from '../constants';
+import { DataBaseTablesEnum } from '../constants';
 
 const chatScheme = new Schema({
   doctorName: {type: String, required: true},
